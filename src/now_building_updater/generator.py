@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
+import re
 from typing import Dict, List, Sequence, Tuple
 
 from .github_api import GitHubClient, Repo, iso_month_range
@@ -95,9 +96,38 @@ def apply_readme_update(readme_text: str, block_markdown: str) -> tuple[str, boo
         updated = readme_text[:start_idx] + managed_block + readme_text[end_idx:]
         return _normalize_spacing(updated), True
 
+    legacy_range = _find_legacy_now_building_range(readme_text)
+    if legacy_range is not None:
+        legacy_start, legacy_end = legacy_range
+        updated = readme_text[:legacy_start] + managed_block + readme_text[legacy_end:]
+        return _normalize_spacing(updated), True
+
     insertion = "\n\n" + managed_block + "\n"
     updated = readme_text.rstrip() + insertion
     return _normalize_spacing(updated), False
+
+
+def _find_legacy_now_building_range(readme_text: str) -> Tuple[int, int] | None:
+    # Prefer replacing a complete legacy block that ends at the footer <sub> line.
+    full_block_pattern = re.compile(
+        r"(?ms)^##\s+Now\s+Building\s*\n.*?^<sub>.*?</sub>\s*\n?"
+    )
+    full_match = full_block_pattern.search(readme_text)
+    if full_match:
+        return full_match.start(), full_match.end()
+
+    # Fallback: replace from heading until the next section heading.
+    heading_pattern = re.compile(r"(?m)^##\s+Now\s+Building\s*$")
+    heading_match = heading_pattern.search(readme_text)
+    if not heading_match:
+        return None
+
+    next_heading_pattern = re.compile(r"(?m)^##\s+")
+    next_match = next_heading_pattern.search(readme_text, heading_match.end())
+    if next_match:
+        return heading_match.start(), next_match.start()
+
+    return heading_match.start(), len(readme_text)
 
 
 def _normalize_spacing(text: str) -> str:
