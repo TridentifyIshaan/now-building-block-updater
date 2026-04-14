@@ -37,6 +37,8 @@ def build_entries(
     include_forks: bool,
     include_archived: bool,
 ) -> List[MonthEntry]:
+    months = max(1, months)
+    rows_per_month = max(1, rows_per_month)
     now = datetime.now(timezone.utc)
     month_pairs = _recent_months(now.year, now.month, months)
 
@@ -49,7 +51,7 @@ def build_entries(
 
     entries: List[MonthEntry] = []
     used_goals: set[str] = set()
-    row_count = max(1, rows_per_month)
+    row_count = rows_per_month
     for index, (year, month) in enumerate(month_pairs):
         since_iso, until_iso = iso_month_range(year, month)
         repo_scores: List[Tuple[Repo, int]] = []
@@ -109,12 +111,12 @@ def render_block(entries: Sequence[MonthEntry], note: str) -> str:
         month_label = datetime(entry.year, entry.month, 1).strftime("%b %Y")
         visible_month = month_label if month_label != previous_label else ""
         lines.append(
-            f"| {visible_month} | {entry.build_track} | {entry.shipping_goal} |"
+            f"| {_escape_cell(visible_month)} | {_escape_cell(entry.build_track)} | {_escape_cell(entry.shipping_goal)} |"
         )
         previous_label = month_label
 
     lines.append("")
-    lines.append(f"<sub> {note}</sub>")
+    lines.append(f"<sub> {_escape_html(note)}</sub>")
     return "\n".join(lines)
 
 
@@ -381,3 +383,13 @@ def _pick_by_offset(values: Sequence[str], offset: int) -> str:
     if not values:
         return "core feature development"
     return values[offset % len(values)]
+
+
+def _escape_cell(value: str) -> str:
+    return value.replace("|", "\\|").replace("\n", " ").strip()
+
+
+def _escape_html(value: str) -> str:
+    escaped = value.replace("&", "&amp;")
+    escaped = escaped.replace("<", "&lt;").replace(">", "&gt;")
+    return escaped.strip()

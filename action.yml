@@ -1,5 +1,5 @@
 name: Now Building Block Updater
-description: Insert or update a managed monthly Now Building block in a README using GitHub repo activity
+description: Insert or update a managed monthly Now Building block in README files from GitHub repository activity
 author: Now Building Updater Contributors
 
 inputs:
@@ -25,7 +25,7 @@ inputs:
   include-private:
     description: "Include private repos if token has access"
     required: false
-    default: "true"
+    default: "false"
   include-forks:
     description: "Include fork repositories"
     required: false
@@ -37,7 +37,7 @@ inputs:
   note:
     description: "Footer note under the generated table"
     required: false
-    default: "Updating this block every month!."
+    default: "Updating this block every month."
 
 runs:
   using: "composite"
@@ -51,7 +51,7 @@ runs:
       shell: bash
       run: |
         python -m pip install --upgrade pip
-        python -m pip install requests
+        python -m pip install "requests>=2.31.0"
 
     - name: Update managed block
       shell: bash

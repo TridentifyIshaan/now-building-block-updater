@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "now-building-block-updater"
-version = "0.1.0"
+version = "1.0.0"
 description = "Auto-insert and monthly update a Now Building block in README files from GitHub repo activity"
 readme = "README.md"
 requires-python = ">=3.10"

@@ -63,7 +63,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     )
     parser.add_argument(
         "--note",
-        default="♻️ Updating this block every month!.",
+        default="Updating this block every month.",
         help="Footer note shown below the table",
     )
     parser.add_argument(
@@ -82,7 +82,19 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 def main() -> int:
     args = parse_args(sys.argv[1:])
 
+    if args.months < 1:
+        print("error: --months must be >= 1", file=sys.stderr)
+        return 2
+    if args.rows_per_month < 1:
+        print("error: --rows-per-month must be >= 1", file=sys.stderr)
+        return 2
+
     token = os.getenv(args.token_env)
+    if args.include_private and not token:
+        print(
+            "warning: --include-private requested but token is missing; private repos may be unavailable.",
+            file=sys.stderr,
+        )
     github = GitHubClient(token=token)
 
     try:

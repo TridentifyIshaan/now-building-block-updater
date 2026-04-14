@@ -33,7 +33,7 @@ class GitHubClient:
             {
                 "Accept": "application/vnd.github+json",
                 "X-GitHub-Api-Version": "2022-11-28",
-                "User-Agent": "now-building-block-updater/0.1.0",
+                "User-Agent": "now-building-block-updater/1.0.0",
             }
         )
         if token:
@@ -180,7 +180,7 @@ def _parse_last_page(link_header: str) -> Optional[int]:
         for char in url[idx + len(marker) :]:
             if char.isdigit():
                 page_value.append(char)
-            else:
+            elif page_value:
                 break
         if page_value:
             return int("".join(page_value))
